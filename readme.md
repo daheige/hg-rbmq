@@ -86,5 +86,9 @@
     ack qps  5000/s
     
     直观分布图： http://127.0.0.1:15672/#/queues/%2F/hello
+
+# 参考文档
+    http://raylei.cn/index.php/archives/50/
+    
     
     

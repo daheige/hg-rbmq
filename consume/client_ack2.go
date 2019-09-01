@@ -40,9 +40,9 @@ func custMsg(i int) {
 
 	//声明队列
 	q, err := ch.QueueDeclare(
-		"hello", //name 队列
-		false,   //durable 是否持久化
-		false,   //autoDelete 是否自动删除
+		"hello_task", //name 队列
+		true,         //durable 是否持久化,durable参数在生产者和消费者程序中都要指定为True
+		false,        //autoDelete 是否自动删除
 		false,
 		false,
 		nil)
@@ -51,6 +51,18 @@ func custMsg(i int) {
 		log.Println("define queue error: ", err)
 		return
 	}
+
+	//公平分发
+	/*err = ch.Qos(
+		1,     // prefetch count 公平分发，每次分发1个
+		0,     // prefetch size
+		false, // global
+	)
+
+	if err != nil {
+		log.Println("prefetch queue error: ", err)
+		return
+	}*/
 
 	//从队列中取出消息进行消费
 	//手动确认消息被消息了
