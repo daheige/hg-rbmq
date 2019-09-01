@@ -89,6 +89,9 @@
 
 # 参考文档
     http://raylei.cn/index.php/archives/50/
+    http://www.geekso.com/rabbitmq/
+    https://blog.csdn.net/vrg000/article/details/81165030#qos
+    https://www.rabbitmq.com/getstarted.html
     
     
     

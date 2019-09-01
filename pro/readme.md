@@ -1,3 +1,7 @@
+# 关闭连接
+    func (ch *Channel) Close() error
+    func (c *Connection) Close() error
+
 # 消息持久化
     go run pro/pro2.go
     
@@ -18,6 +22,12 @@
     
     当消费者消费完毕后，发送了确认ack信息后，消息就会从队列中删除
  
+    持久化的作用是防止在重启、关闭、宕机的情况下数据丢失，持久化是相对靠谱的，如果数据在内存中，没来得及存盘就发生了重启，那么数据还是会丢失。 
+    持久化可分为三类： 
+    1、Exchange的持久化（创建时设置参数） 
+    2、Queue的持久化（创建时设置参数） 
+    3、Msg的持久化（发送时设置Args）
+   
 # 公平分发
     有时候队列的轮询调度并不能满足我们的需求，假设有这么一个场景，存在两个消费者程序，所有的单数序列消息都是长耗时任务而双数序列消息则都是简单任务，那么结果将是一个消费者一直处于繁忙状态而另外一个则几乎没有任务被挂起。当RabbitMQ对此情况却是视而不见，仍然根据轮询来分发消息。
     
@@ -35,7 +45,56 @@
     )
     log.Println(err)
     
+    go rbmq源码
+    Qos
+    func (ch *Channel) Qos(prefetchCount, prefetchSize int, global bool) error
+    注意：这个在推送模式下非常重要，通过设置Qos用来防止消息堆积。 
+    prefetchCount：消费者未确认消息的个数。 
+    prefetchSize ：消费者未确认消息的大小。 
+    global ：是否全局生效，true表示是。全局生效指的是针对当前connect里的所有channel都生效。
+   
 # 关于队列长度
 
     NOTE：如果所有的消费者都繁忙，队列可能会被消息填满。你需要注意这种情况
     要么通过增加消费者来处理，要么改用其他的策略
+    
+# 发送消息
+    发送消息
+    func (ch *Channel) Publish(exchange, key string, mandatory, immediate bool, msg Publishing) error
+    exchange：要发送到的交换机名称，对应图中exchangeName。 
+    key：路由键，对应图中RoutingKey。 
+    mandatory：直接false，不建议使用，后面有专门章节讲解。 
+    immediate ：直接false，不建议使用，后面有专门章节讲解。 
+    msg：要发送的消息，msg对应一个Publishing结构，Publishing结构里面有很多参数，这里只强调几个参数，其他参数暂时列出，但不解释。
+    
+    # cat $(find ./amqp) | grep -rin type.*Publishing
+    type Publishing struct {
+            Headers Table
+            // Properties
+            ContentType     string //消息的类型，通常为“text/plain”
+            ContentEncoding string //消息的编码，一般默认不用写
+            DeliveryMode    uint8  //消息是否持久化，2表示持久化，0或1表示非持久化。
+            Body []byte //消息主体
+            Priority        uint8 //消息的优先级 0 to 9
+            CorrelationId   string    // correlation identifier
+            ReplyTo         string    // address to to reply to (ex: RPC)
+            Expiration      string    // message expiration spec
+            MessageId       string    // message identifier
+            Timestamp       time.Time // message timestamp
+            Type            string    // message type name
+            UserId          string    // creating user id - ex: "guest"
+            AppId           string    // creating application id
+    }
+    
+# 接受消息 – 推模式
+    RMQ Server主动把消息推给消费者
+    
+    func (ch *Channel) Consume(queue, consumer string, autoAck, exclusive, noLocal, noWait bool, args Table) (<-chan Delivery, error)
+    queue:队列名称。 
+    consumer:消费者标签，用于区分不同的消费者。 
+    autoAck:是否自动回复ACK，true为是，回复ACK表示高速服务器我收到消息了。建议为false，手动回复，这样可控性强。 
+    exclusive:设置是否排他，排他表示当前队列只能给一个消费者使用。 
+    noLocal:如果为true，表示生产者和消费者不能是同一个connect。 
+    nowait：是否非阻塞，true表示是。阻塞：表示创建交换器的请求发送后，阻塞等待RMQ Server返回信息。非阻塞：不会阻塞等待RMQ Server的返回信息，而RMQ Server也不会返回信息。（不推荐使用） 
+    args：直接写nil，没研究过，不解释。 
+    注意下返回值：返回一个<- chan Delivery类型，遍历返回值，有消息则往下走， 没有则阻塞
