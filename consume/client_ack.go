@@ -1,10 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"flag"
 	"log"
+	"math/rand"
 	"os"
 	"os/signal"
 	"syscall"
@@ -20,7 +20,8 @@ func init() {
 	flag.Parse()
 }
 
-func main() {
+func custMsg(i int) {
+	log.Println("current consume index: ", i)
 	conn, err := amqp.Dial("amqp://root:root@:5672/") //通过amqp协议连接到rbmq
 	if err != nil {
 		log.Println("rbmq connection error: ", err)
@@ -50,21 +51,28 @@ func main() {
 	msgs, err := ch.Consume(q.Name, "", false, false, false, false, nil)
 
 	/**
-		消息ack
+	消息ack
 	当消费者的autoack为true时，一旦收到消息就会直接把该消息设置为删除状态，如果消息的处理时间之内，消费者挂掉了那么这条消息就会丢失掉。
 	rabbitmq支持消息ack机制，将autoack设为false，当处理完毕再手动触发ack操作。如果处理消息的过程中挂掉了，那么这条消息就会分发给其他都消费者。
 	*/
-	go func() {
-		for msg := range msgs {
-			log.Printf("Received a message: %s", msg.Body)
-			dotCount := bytes.Count(msg.Body, []byte("."))
-			t := time.Duration(dotCount)
-			time.Sleep(t * time.Second)
-			log.Printf("Done")
+	for msg := range msgs {
+		log.Printf("Received a message: %s", msg.Body)
 
-			msg.Ack(false)
-		}
-	}()
+		//模拟消息耗时
+		time.Sleep(time.Duration(rand.Int63n(20)) * time.Millisecond)
+		log.Printf("Done")
+
+		//发送确认消息
+		msg.Ack(false)
+	}
+
+}
+func main() {
+	//开启多个消费者
+	var nums = 100
+	for i := 0; i < nums; i++ {
+		go custMsg(i)
+	}
 
 	chSig := make(chan os.Signal, 1)
 	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)

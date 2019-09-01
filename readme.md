@@ -69,3 +69,20 @@
 
     当访问http://localhost:15672/#/queues/%2F/hello
     getMsg发现消息已经被消费掉了
+
+# 压力测试
+    200个生产者 200w消息,重用连接ch
+    go run pro/production.go
+    
+    
+    100个消费者 60个独立协程进行消费
+    go run consume/client_ack.go
+    
+    访问http://127.0.0.1:15672/#/queues 查看
+    生产者qps 2w/s
+    消费者qps 1.2w/s
+    ack qps  5000/s
+    
+    直观分布图： http://127.0.0.1:15672/#/queues/%2F/hello
+    
+    
