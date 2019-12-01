@@ -17,4 +17,8 @@
     当分发给该消费者的前一个消息还没有收到ack确认时，RabbitMQ将不会再给它派发消息，
     而是寻找下一个空闲的消费者目标进行分发
     
+# rbmq官网公平分发
+    
+    https://github.com/rabbitmq/rabbitmq-tutorials/blob/master/go/worker.go
+    
     

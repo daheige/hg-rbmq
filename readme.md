@@ -51,16 +51,18 @@
 
 # go rbmq 运行
 
+    cd part0
+
     生产者：
-        heige@daheige:/web/go/hg-rbmq$ go run pro/production.go
+        $ go run pro/production.go
         2019/08/12 22:21:12 push success
-        heige@daheige:/web/go/hg-rbmq$ go run pro/production.go
+        $ go run pro/production.go
         2019/08/12 22:21:14 push success
-        heige@daheige:/web/go/hg-rbmq$ go run pro/production.go
+        $ go run pro/production.go
         2019/08/12 22:21:15 push success
 
     消费者：
-        heige@daheige:/web/go/hg-rbmq/consume$ go run client.go
+        /consume$ go run client.go
         2019/08/12 22:17:25 Received a message: Hello World33!
         2019/08/12 22:21:04 Received a message: Hello World33!
         2019/08/12 22:21:12 Received a message: Hello World33!
@@ -71,27 +73,32 @@
     getMsg发现消息已经被消费掉了
 
 # 压力测试
+
     200个生产者 200w消息,重用连接ch
     go run pro/production.go
     2019/09/01 10:43:23 send message ok
     2019/09/01 10:43:23 cost time:  5m56.307315797s
-    
-    
+
+
     100个消费者 60个独立协程进行消费
     go run consume/client_ack.go
-    
+
     访问http://127.0.0.1:15672/#/queues 查看
     生产者qps 2w/s
     消费者qps 1.2w/s
     ack qps  5000/s
-    
+
     直观分布图： http://127.0.0.1:15672/#/queues/%2F/hello
 
+# rbmq go 官网demo
+
+    https://github.com/rabbitmq/rabbitmq-tutorials/tree/master/go
+    
 # 参考文档
+
     http://raylei.cn/index.php/archives/50/
     http://www.geekso.com/rabbitmq/
     https://blog.csdn.net/vrg000/article/details/81165030#qos
     https://www.rabbitmq.com/getstarted.html
-    
-    
+    https://blog.csdn.net/weixin_40051278/article/details/99287005
     

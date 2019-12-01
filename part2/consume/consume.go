@@ -89,8 +89,10 @@ func main() {
 			log.Println("recv msg: ", str)
 
 			//模拟消费者停顿，让rbmq公平分发
-			t := time.Duration(len(str) - 10)
-			time.Sleep(t * time.Millisecond)
+			// t := time.Duration(len(str) - 10)
+			// time.Sleep(t * time.Millisecond)
+
+			// time.Sleep(2 * time.Millisecond)
 
 			// 消费者手动应答
 			// data.Acknowledger.Ack(data.DeliveryTag, true)
@@ -134,4 +136,18 @@ func main() {
 
 
 启动多个消费者，就是work模式
+消费者1：
+2019/12/01 19:14:32 recv msg:  {"id":467886,"data":"hello,heige"}
+2019/12/01 19:14:32 recv msg:  {"id":467888,"data":"hello,heige"}
+2019/12/01 19:14:32 recv msg:  {"id":467890,"data":"hello,heige"}
+2019/12/01 19:14:32 recv msg:  {"id":467892,"data":"hello,heige"}
+2019/12/01 19:14:32 recv msg:  {"id":467894,"data":"hello,heige"}
+
+消费者2：
+2019/12/01 19:14:32 recv msg:  {"id":467887,"data":"hello,heige"}
+2019/12/01 19:14:32 recv msg:  {"id":467889,"data":"hello,heige"}
+2019/12/01 19:14:32 recv msg:  {"id":467891,"data":"hello,heige"}
+2019/12/01 19:14:32 recv msg:  {"id":467893,"data":"hello,heige"}
+
+ch.Qos函数指定了可以使用work模式
 */
